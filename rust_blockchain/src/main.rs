@@ -1,101 +1,29 @@
-use std::time::{SystemTime, UNIX_EPOCH};
-use sha2::{Sha256, Digest};
+use actix_web::{web, App, HttpServer, Responder};
 
-#[derive(Debug)]
-struct Block {
-    index: u64,
-    timestamp: u128,
-    data: String,
-    previous_hash: String,
-    hash: String,
+async fn greet() -> impl Responder {
+    "Welcome to My DeFi Wallet API!"
 }
 
-impl Block {
-    fn new(index: u64, data: String, previous_hash: String) -> Block {
-        let timestamp = get_current_time();
-        let hash = calculate_hash(index, timestamp, &data, &previous_hash);
-
-        Block {
-            index,
-            timestamp,
-            data,
-            previous_hash,
-            hash,
-        }
-    }
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| {
+        App::new().route("/", web::get().to(greet))
+    })
+    .bind("127.0.0.1:8080")?
+    .run()
+    .await
 }
 
-fn get_current_time() -> u128 {
-    let start = SystemTime::now();
-    let since_the_epoch = start.duration_since(UNIX_EPOCH).expect("Time went backwards");
-    since_the_epoch.as_millis()
+async fn create_wallet() -> impl Responder {
+    let wallet = LocalWallet::new(&mut rand::thread_rng());
+    format!("Wallet Address: {:?}", wallet.address())
 }
 
-fn calculate_hash(index: u64, timestamp: u128, data: &str, previous_hash: &str) -> String {
-    let mut hasher = Sha256::new();
-    let input = format!("{}{}{}{}", index, timestamp, data, previous_hash);
-    hasher.update(input.as_bytes());
-    format!("{:x}", hasher.finalize())
-}
+use sqlx::PgPool;
+use dotenv::dotenv;
 
-#[derive(Debug)]
-struct Blockchain {
-    chain: Vec<Block>,
-}
-
-impl Blockchain {
-    fn new() -> Blockchain {
-        Blockchain {
-            chain: vec![Blockchain::create_genesis_block()],
-        }
-    }
-
-    fn create_genesis_block() -> Block {
-        Block::new(0, "Genesis Block".to_string(), "0".to_string())
-    }
-
-    fn add_block(&mut self, data: String) {
-        let last_block = self.chain.last().expect("Blockchain should have at least one block");
-        let new_block = Block::new(self.chain.len() as u64, data, last_block.hash.clone());
-        self.chain.push(new_block);
-    }
-
-    fn is_chain_valid(&self) -> bool {
-        for i in 1..self.chain.len() {
-            let current_block = &self.chain[i];
-            let previous_block = &self.chain[i - 1];
-
-            if current_block.hash != calculate_hash(
-                current_block.index,
-                current_block.timestamp,
-                &current_block.data,
-                &current_block.previous_hash,
-            ) {
-                return false;
-            }
-
-            if current_block.previous_hash != previous_block.hash {
-                return false;
-            }
-        }
-        true
-    }
-}
-
-fn main() {
-    let mut blockchain = Blockchain::new();
-
-    // Add some blocks
-    blockchain.add_block("Block 1 data".to_string());
-    blockchain.add_block("Block 2 data".to_string());
-
-    // Print the blockchain
-    println!("{:#?}", blockchain);
-
-    // Check if the chain is valid
-    if blockchain.is_chain_valid() {
-        println!("Blockchain is valid!");
-    } else {
-        println!("Blockchain is NOT valid!");
-    }
+async fn create_db_pool() -> PgPool {
+    dotenv().ok();
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    PgPool::connect(&database_url).await.unwrap()
 }
