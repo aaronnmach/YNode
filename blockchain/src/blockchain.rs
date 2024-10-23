@@ -1,43 +1,28 @@
-use crate::block::Block;
 use crate::pos::PoS;
-use std::time::{SystemTime, UNIX_EPOCH}; // Import system time for timestamp
+use crate::block::Block;
 
 pub struct Blockchain {
     pub chain: Vec<Block>,
-    pub pos: PoS, // Proof of Stake system
+    pub pos: PoS,
 }
 
 impl Blockchain {
     pub fn new() -> Self {
-        Blockchain {
+        Self {
             chain: Vec::new(),
             pos: PoS::new(),
         }
     }
 
-    pub fn add_block(&mut self) {
-        if let Some(validator) = self.pos.choose_validator() {
-            let previous_hash = if self.chain.is_empty() {
-                String::from("0") // Genesis block
-            } else {
-                self.chain.last().unwrap().hash.clone()
-            };
+    pub fn add_block(&mut self, validator_id: &str) {
+        let previous_hash = self.chain.last().map_or("0".to_string(), |block| block.hash.clone());
+        let new_block = Block::new(self.chain.len() as u32, previous_hash, 0);
+        self.chain.push(new_block);
 
-            // Get current timestamp as u64
-            let timestamp = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .expect("Time went backwards")
-                .as_secs();
-
-            let block = Block::new(self.chain.len() as u32, previous_hash, timestamp); // Pass the timestamp
-            println!("Block added by validator: {}", validator.id);
-            self.chain.push(block);
-        } else {
-            println!("No validators available to add a block.");
+        // For now, manually penalize a validator if needed (logic to be extended)
+        if validator_id == "malicious_validator_id" {
+            println!("Malicious activity detected for validator {}", validator_id);
+            self.pos.penalize_validator(validator_id, 50);  // Penalize by removing 50 tokens
         }
-    }
-
-    pub fn add_validator(&mut self, id: String, stake: u64) {
-        self.pos.add_validator(id, stake);
     }
 }

@@ -1,38 +1,28 @@
-mod blockchain; // Import the blockchain module
-mod block;      // Import the block module
-mod validator;  // Import the validator module
-mod pos;        // Import the PoS module
+mod block;
+mod blockchain;
+mod pos;
+mod validator;
 
-use pos::PoS;
+use blockchain::Blockchain;
+use validator::Validator;
 
 fn main() {
-    // Step 1: Initialize a PoS system
-    let mut pos_system = PoS::new();
+    // Initialize the blockchain
+    let mut blockchain = Blockchain::new();
 
-    // Step 2: Add some validators with different stakes
-    pos_system.add_validator(String::from("Alice"), 100);
-    pos_system.add_validator(String::from("Bob"), 50);
-    pos_system.add_validator(String::from("Charlie"), 200);
+    // Create validators
+    let validator1 = Validator::new("validator1".to_string(), 100);
+    let malicious_validator = Validator::new("malicious_validator_id".to_string(), 200);
 
-    // Step 3: Simulate choosing a validator to propose a block
-    if let Some(chosen_validator) = pos_system.choose_validator() {
-        println!(
-            "Validator chosen to propose the block: {} with stake: {}",
-            chosen_validator.id, chosen_validator.stake
-        );
-    } else {
-        println!("No validators available.");
-    }
+    // Add validators to the PoS system
+    blockchain.pos.add_validator(validator1);
+    blockchain.pos.add_validator(malicious_validator);
 
-    // Step 4: Repeat to simulate multiple block proposals
-    for _ in 0..5 {
-        if let Some(chosen_validator) = pos_system.choose_validator() {
-            println!(
-                "Validator chosen to propose the block: {} with stake: {}",
-                chosen_validator.id, chosen_validator.stake
-            );
-        } else {
-            println!("No validators available.");
-        }
+    // Add a block and simulate a malicious validator action
+    blockchain.add_block("malicious_validator_id");
+
+    // Print the validators to see their updated stakes
+    for validator in &blockchain.pos.validators {
+        println!("Validator: {}, Stake: {}, Penalized: {}", validator.id, validator.stake, validator.penalized);
     }
 }
