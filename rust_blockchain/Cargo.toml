@@ -9,7 +9,7 @@ actix-web = "4"  # or rocket = "0.5" for Rocket framework
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1", features = ["full"] }
-ethers = "1.0"  # For Ethereum interaction
+ethers = { version = "0.6", features = ["tokio"] }
 dotenv = "0.15"  # For environment variable management
 sqlx = { version = "0.5", features = ["postgres", "runtime-tokio-rustls"] }
 rocket = "0.5.0-rc.1"
