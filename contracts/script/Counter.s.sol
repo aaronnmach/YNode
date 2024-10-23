@@ -5,15 +5,16 @@ import {Script, console} from "forge-std/Script.sol";
 import {Counter} from "../src/Counter.sol";
 
 contract CounterScript is Script {
-    Counter public counter;
-
     function setUp() public {}
 
     function run() public {
-        vm.startBroadcast();
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
 
-        counter = new Counter();
-
+        Counter counter = new Counter();
+        console.log("Counter address: ", address(counter));
+        counter.setNumber(69420);
+        console.log("Counter number: ", counter.number());
         vm.stopBroadcast();
     }
 }
