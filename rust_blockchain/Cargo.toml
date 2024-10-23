@@ -5,4 +5,7 @@ edition = "2021"
 
 [dependencies]
 sha2 = "0.10"
-# You can check for the latest version on crates.io
+tokio = { version = "1", features = ["full"] }  # For asynchronous programming
+reqwest = { version = "0.11", features = ["json"] }  # For HTTP requests
+serde = { version = "1.0", features = ["derive"] }  # For serialization/deserialization
+ethers = "1.0"  # For Ethereum interaction (if you’re building for Ethereum)
