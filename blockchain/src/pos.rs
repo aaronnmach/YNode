@@ -42,4 +42,5 @@ impl PoS {
             println!("Validator with ID {} not found.", validator_id);
         }
     }
+    
 }

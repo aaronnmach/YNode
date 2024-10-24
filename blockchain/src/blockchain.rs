@@ -1,5 +1,8 @@
 use crate::pos::PoS;
 use crate::block::Block;
+use crate::transaction::Transaction;
+
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct Blockchain {
     pub chain: Vec<Block>,
@@ -13,13 +16,22 @@ impl Blockchain {
             pos: PoS::new(),
         }
     }
+    fn get_current_timestamp() -> u64 {
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_secs()
+    }
 
-    pub fn add_block(&mut self, validator_id: &str) {
+    pub fn add_block(&mut self, validator_id: &str, transactions: Vec<Transaction>) {
         let previous_hash = self.chain.last().map_or("0".to_string(), |block| block.hash.clone());
-        let new_block = Block::new(self.chain.len() as u32, previous_hash, 0);
+        let timestamp = Self::get_current_timestamp(); // Get current timestamp
+
+        // Create the new block with the transactions
+        let new_block = Block::new(self.chain.len() as u32, previous_hash, timestamp, transactions);
         self.chain.push(new_block);
 
-        // For now, manually penalize a validator if needed (logic to be extended)
+        // Penalize validator for malicious activity (if needed)
         if validator_id == "malicious_validator_id" {
             println!("Malicious activity detected for validator {}", validator_id);
             self.pos.penalize_validator(validator_id, 50);  // Penalize by removing 50 tokens
