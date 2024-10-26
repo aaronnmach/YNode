@@ -3,16 +3,20 @@ mod blockchain;
 mod pos;
 mod validator;
 mod transaction;
+mod coin;
+mod account;
 
 use blockchain::Blockchain;
 use validator::Validator;
 use transaction::Transaction;
 use block::Block;
+use account::Account;
+use coin::Coin;
 
 fn main() {
     // Initialize the blockchain
     let mut blockchain = Blockchain::new();
-    
+
     // Sample data for testing
     let sender = "SenderPublicKey".to_string();
     let receiver = "ReceiverPublicKey".to_string();

@@ -21,7 +21,6 @@ impl Block {
             hash,
         }
     }
-
     // A simple hash calculation combining the index, previous hash, and timestamp
     pub fn calculate_hash(index: u32, previous_hash: &str, timestamp: u64, transactions: &[Transaction]) -> String {
         let mut hasher = Sha256::new();
