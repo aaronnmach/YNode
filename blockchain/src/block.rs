@@ -9,6 +9,7 @@ pub struct Block {
     pub timestamp: u64,
     pub transactions: Vec<Transaction>,
     pub hash: String,
+    pub next: Option<Box<Block>>,
 }
 
 impl Block {
@@ -20,8 +21,10 @@ impl Block {
             timestamp,
             transactions,
             hash,
+            next: None,
         }
     }
+
     pub fn calculate_hash(index: u32, previous_hash: &str, timestamp: u64, transactions: &[Transaction]) -> String {
         let mut hasher = Sha256::new();
         hasher.update(format!("{}{}{}", index, previous_hash, timestamp));
@@ -38,7 +41,16 @@ impl Block {
         let result = hasher.finalize();
         format!("{:x}", result)
     }    
-    
+    pub fn add_transaction(&mut self, transaction: Transaction) -> Result<(), &'static str> {
+        // You might want to add conditions, e.g., maximum transactions per block
+        // if self.transactions.len() >= MAX_TRANSACTIONS {
+        //     return Err("Transaction limit reached for this block");
+        // }
+        
+        // Add the transaction to the block's transaction list
+        self.transactions.push(transaction);
+        Ok(())
+    }
 }
 
 // Implementing Display trait for pretty printing

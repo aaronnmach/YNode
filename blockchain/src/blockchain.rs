@@ -5,15 +5,16 @@ use crate::transaction::Transaction;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct Blockchain {
-    pub chain: Vec<Block>,
-    pub pos: PoS,
+    pub head: Option<Box<Block>>,
+    pub count: u32,
 }
 
 impl Blockchain {
     pub fn new() -> Self {
-        Self {
-            chain: Vec::new(),
-            pos: PoS::new(),
+        let genesis_block = Block::new(0, String::from("0"), 0, Vec::new());
+        Blockchain {
+            head: Some(Box::new(genesis_block)), // Initialize with the genesis block
+            count: 1,
         }
     }
     fn get_current_timestamp() -> u64 {
@@ -23,18 +24,41 @@ impl Blockchain {
             .as_secs()
     }
 
-    pub fn add_block(&mut self, transactions: Vec<Transaction>) {
-        let previous_hash = self.chain.last().map_or("0".to_string(), |block| block.hash.clone());
-        let timestamp = Self::get_current_timestamp(); // Get current timestamp
+    pub fn add_block(&mut self, new_block: Block) {
+        // If the blockchain is empty, set the head to the new block
+        if self.head.is_none() {
+            self.head = Some(Box::new(new_block));
+        } else {
+            // Traverse to the last block
+            let mut current = self.head.as_mut(); // Get mutable reference to the head
 
-        // Create the new block with the transactions
-        let new_block = Block::new(self.chain.len() as u32, previous_hash, timestamp, transactions);
-        self.chain.push(new_block);
+            while let Some(mut block) = current.take() {
+                // If there is no next block, we can add the new block here
+                if block.next.is_none() {
+                    block.next = Some(Box::new(new_block));
+                    current = Some(block); // Restore current
+                    break;
+                } else {
+                    // Move to the next block
+                    current = block.next.as_mut(); // Update current to the next block
+                }
+            }
+        }
 
-        // Penalize validator for malicious activity (if needed)
-        // "malicious_validator_id" is a placeholder
+        // Increment the block count
+        self.count += 1;
     }
-    pub fn get_last_block(&self) -> Option<&Block> {
-        self.chain.last() // returns an Option containing the last block, if it exists
+    pub fn print_chain(&self) {
+        let mut current = self.head.as_ref(); // Start with the head of the chain
+        while let Some(block) = current {
+            println!(
+                "Block Index: {}\nPrevious Hash: {}\nTimestamp: {}\nTransactions: {:?}\n",
+                block.index,
+                block.previous_hash,
+                block.timestamp,
+                block.transactions.len(),
+            );
+            current = block.next.as_ref(); // Move to the next block
+        }
     }
 }

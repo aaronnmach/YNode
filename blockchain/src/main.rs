@@ -34,17 +34,11 @@ fn main() {
             println!("Transaction ID (actionID): {}", transaction.actionID);
             println!("Sender New Balance: {}", sender.get_balance());
             println!("Recipient New Balance: {}", recipient.get_balance());
-
-            // Print the latest block information
-            if let Some(last_block) = blockchain.get_last_block() {
-                println!("Latest Block Information:");
-                println!("{}", last_block);
-            } else {
-                println!("No blocks in the blockchain.");
-            }
         }
         Err(e) => {
             println!("Transaction Failed: {}", e);
         }
     }
+    println!("------------------"); 
+    blockchain.print_chain();
 }

@@ -3,6 +3,8 @@ use crate::transaction::Transaction;
 use crate::Blockchain;
 use ring::signature::{self, Ed25519KeyPair, KeyPair, UnparsedPublicKey, ED25519};
 use ring::rand::SystemRandom;
+use std::time::{SystemTime, UNIX_EPOCH};
+use crate::Block;
 
 pub struct Account {
     pub public_key: Vec<u8>,
@@ -38,6 +40,12 @@ impl Account {
     pub fn get_balance(&self) -> u64 {
         self.coins.get_balance()
     }
+    fn get_current_timestamp() -> u64 {
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_secs()
+    }
     pub fn send(
         &mut self,
         recipient: &mut Account,
@@ -67,11 +75,22 @@ impl Account {
         self.coins.subtract(amount)?;
         recipient.coins.add(amount);
     
-        // Add the transaction to a new block in the blockchain
-        blockchain.add_block(vec![transaction.clone()]);
+        // Prepare to create a new block
+        let index = blockchain.count; // Get the current block count as the index
+        let previous_hash = blockchain.head.as_ref().map(|block| block.hash.clone()).unwrap_or_default(); // Get the previous hash
+        let timestamp = Self::get_current_timestamp(); // You should implement this function to get the current timestamp
+    
+        // Create a new block with the transaction
+        let mut new_block = Block::new(index, previous_hash, timestamp,  vec![transaction.clone()]);
+    
+        // Calculate the hash for the new block // Implement the hash calculation
+    
+        // Add the new block to the blockchain
+        blockchain.add_block(new_block); // You might need to adjust your add_block function accordingly
     
         // Return the transaction as confirmation
         Ok(transaction)
     }
+    
     
 }
