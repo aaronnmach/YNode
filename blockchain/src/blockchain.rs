@@ -34,4 +34,7 @@ impl Blockchain {
         // Penalize validator for malicious activity (if needed)
         // "malicious_validator_id" is a placeholder
     }
+    pub fn get_last_block(&self) -> Option<&Block> {
+        self.chain.last() // returns an Option containing the last block, if it exists
+    }
 }

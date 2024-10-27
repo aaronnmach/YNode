@@ -3,8 +3,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Clone)]
 pub struct Transaction {
-    pub senderKey: String, 
-    pub receiverKey: String,
+    pub senderKey: Vec<u8>, 
+    pub receiverKey: Vec<u8>,
     pub amount: u64,
     pub timestamp: u64,
     pub actionID: String,
@@ -13,7 +13,7 @@ pub struct Transaction {
 
 impl Transaction{   
     // for creating a new transaction
-    pub fn new(sender: String, receiver: String, amount: u64) -> Self{
+    pub fn new(sender: Vec<u8>, receiver: Vec<u8>, amount: u64) -> Self{
         let timestamp = Self::get_current_timestamp();
         let actionID = Transaction::calculate_tx_id(&sender, &receiver, amount, timestamp);
         Transaction {
@@ -25,13 +25,29 @@ impl Transaction{
         }
     }
     // generates a unique hash for the transaction based on sender, receipient, amount, timestamp
-    pub fn calculate_tx_id(senderKey: &str, receiverKey: &str, amount: u64, timestamp: u64) -> String {
-        let tx_data = format!("{}:{}:{}:{}", senderKey, receiverKey, amount, timestamp);
+
+    pub fn calculate_tx_id(sender_key: &Vec<u8>, receiver_key: &Vec<u8>, amount: u64, timestamp: u64) -> String {
+        // Helper function to convert Vec<u8> to a hex string
+        fn vec_to_hex(bytes: &Vec<u8>) -> String {
+            bytes.iter().map(|byte| format!("{:02x}", byte)).collect()
+        }
+
+        // Convert sender and receiver keys to hex
+        let sender_hex = vec_to_hex(sender_key);
+        let receiver_hex = vec_to_hex(receiver_key);
+
+        // Format the data as a string with hex representations of keys
+        let tx_data = format!("{}:{}:{}:{}", sender_hex, receiver_hex, amount, timestamp);
+
+        // Hash the formatted transaction data
         let mut hasher = Sha256::new();
         hasher.update(tx_data.as_bytes());
         let result = hasher.finalize();
-        format!("{:x}", result)  // Convert to hex string
+
+        // Return the result as a hex string
+        format!("{:x}", result)
     }
+
     fn get_current_timestamp() -> u64 {
         SystemTime::now()
             .duration_since(UNIX_EPOCH)

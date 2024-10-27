@@ -1,6 +1,7 @@
 use sha2::{Sha256, Digest};
 use std::fmt;
 use crate::transaction::Transaction;
+use hex;
 
 pub struct Block {
     pub index: u32,
@@ -21,25 +22,30 @@ impl Block {
             hash,
         }
     }
-    // A simple hash calculation combining the index, previous hash, and timestamp
     pub fn calculate_hash(index: u32, previous_hash: &str, timestamp: u64, transactions: &[Transaction]) -> String {
         let mut hasher = Sha256::new();
         hasher.update(format!("{}{}{}", index, previous_hash, timestamp));
         
         // Include the transaction data in the hash calculation
         for tx in transactions {
-            hasher.update(format!("{}{}{}", tx.senderKey, tx.receiverKey, tx.amount));
+            // Convert Vec<u8> to a hex string representation for hashing
+            let sender_key_hex = hex::encode(&tx.senderKey);
+            let receiver_key_hex = hex::encode(&tx.receiverKey);
+            
+            hasher.update(format!("{}{}{}", sender_key_hex, receiver_key_hex, tx.amount));
         }
         
         let result = hasher.finalize();
         format!("{:x}", result)
-    }
+    }    
+    
 }
 
 // Implementing Display trait for pretty printing
-impl fmt::Display for Block {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Block[{}]:\n\tHash: {}\n\tPrevious Hash: {}\n\tTimestamp: {}\n\tTransactions: {}\n", 
-               self.index, self.hash, self.previous_hash, self.timestamp, self.transactions.len())
+    impl fmt::Display for Block {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "Block[{}]:\n\tHash: {}\n\tPrevious Hash: {}\n\tTimestamp: {}\n\tTransactions: {}\n", 
+                self.index, self.hash, self.previous_hash, self.timestamp, self.transactions.len())
+        }
     }
-}
+    

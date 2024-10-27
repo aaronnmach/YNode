@@ -7,3 +7,5 @@ edition = "2021"
 sha2 = "0.10"      # For hashing
 chrono = "0.4"  
 rand = "0.8"
+ring = "0.16"
+hex = "0.4"

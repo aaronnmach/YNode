@@ -14,38 +14,37 @@ use account::Account;
 use coin::Coin;
 
 fn main() {
+    // Create two accounts with initial balances
+    let mut sender = Account::new(1000); // Sender with 1000 coins
+    let mut recipient = Account::new(500); // Recipient with 500 coins
+    
     // Initialize the blockchain
     let mut blockchain = Blockchain::new();
 
-    // Sample data for testing
-    let mut sender = Account::new("234".to_string(), 100);
-    let mut receiver = Account::new("235".to_string(), 50);
-    let amount = 100;
-    
-    match sender.send(&mut receiver, amount, &mut blockchain) {
+    // Amount to send
+    let amount_to_send = 200;
+
+    // Attempt to send coins
+    match sender.send(&mut recipient, amount_to_send, &mut blockchain) {
         Ok(transaction) => {
-            // Print confirmation message with all transaction details
-            println!(
-                "Transaction Successful!\n\
-                From: {}\n\
-                To: {}\n\
-                Amount Sent: {}\n\
-                Transaction ID: {}\n",
-                transaction.senderKey,
-                transaction.receiverKey,
-                transaction.amount,
-                transaction.actionID
-            );
-        },
+            println!("Transaction Successful!");
+            println!("Sender Key: {:?}", sender.public_key);
+            println!("Receiver Key: {:?}", recipient.public_key);
+            println!("Amount Sent: {}", amount_to_send);
+            println!("Transaction ID (actionID): {}", transaction.actionID);
+            println!("Sender New Balance: {}", sender.get_balance());
+            println!("Recipient New Balance: {}", recipient.get_balance());
+
+            // Print the latest block information
+            if let Some(last_block) = blockchain.get_last_block() {
+                println!("Latest Block Information:");
+                println!("{}", last_block);
+            } else {
+                println!("No blocks in the blockchain.");
+            }
+        }
         Err(e) => {
-            println!("Transaction failed: {}", e);
+            println!("Transaction Failed: {}", e);
         }
     }
-
-
-    // Print the blockchain for verification
-    for block in blockchain.chain.iter() {
-        println!("{}", block);
-    }
-
 }
