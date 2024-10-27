@@ -18,20 +18,30 @@ fn main() {
     let mut blockchain = Blockchain::new();
 
     // Sample data for testing
-    let sender = "SenderPublicKey".to_string();
-    let receiver = "ReceiverPublicKey".to_string();
+    let mut sender = Account::new("234".to_string(), 100);
+    let mut receiver = Account::new("235".to_string(), 50);
     let amount = 100;
-    let signature = vec![0u8; 64]; // Placeholder for the signature
+    
+    match sender.send(&mut receiver, amount, &mut blockchain) {
+        Ok(transaction) => {
+            // Print confirmation message with all transaction details
+            println!(
+                "Transaction Successful!\n\
+                From: {}\n\
+                To: {}\n\
+                Amount Sent: {}\n\
+                Transaction ID: {}\n",
+                transaction.senderKey,
+                transaction.receiverKey,
+                transaction.amount,
+                transaction.actionID
+            );
+        },
+        Err(e) => {
+            println!("Transaction failed: {}", e);
+        }
+    }
 
-    // Create a few sample transactions
-    let transaction1 = Transaction::new(sender.clone(), receiver.clone(), amount, signature.clone());
-    let transaction2 = Transaction::new(sender.clone(), receiver.clone(), amount * 2, signature.clone());
-
-    // Group transactions into a vector
-    let transactions = vec![transaction1, transaction2];
-
-    // Add a block with these transactions, using a sample validator ID
-    blockchain.add_block("validator_1", transactions);
 
     // Print the blockchain for verification
     for block in blockchain.chain.iter() {

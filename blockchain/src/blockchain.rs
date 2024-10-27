@@ -23,7 +23,7 @@ impl Blockchain {
             .as_secs()
     }
 
-    pub fn add_block(&mut self, validator_id: &str, transactions: Vec<Transaction>) {
+    pub fn add_block(&mut self, transactions: Vec<Transaction>) {
         let previous_hash = self.chain.last().map_or("0".to_string(), |block| block.hash.clone());
         let timestamp = Self::get_current_timestamp(); // Get current timestamp
 
@@ -32,9 +32,6 @@ impl Blockchain {
         self.chain.push(new_block);
 
         // Penalize validator for malicious activity (if needed)
-        if validator_id == "malicious_validator_id" {
-            println!("Malicious activity detected for validator {}", validator_id);
-            self.pos.penalize_validator(validator_id, 50);  // Penalize by removing 50 tokens
-        }
+        // "malicious_validator_id" is a placeholder
     }
 }

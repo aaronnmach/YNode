@@ -1,4 +1,6 @@
-use coin::Coin;
+use crate::coin::Coin;
+use crate::transaction::Transaction;
+use crate::Blockchain;
 
 pub struct Account {
     pub public_key: String,
@@ -17,9 +19,22 @@ impl Account {
         self.coins.get_balance()
     }
 
-    pub fn send(&mut self, recipient: &mut Account, amount: u64) -> Result<(), &'static str> {
-        self.coins.subtract(amount)?;
-        recipient.coins.add(amount);
-        Ok(())
+    pub fn send(&mut self, recipient: &mut Account, amount: u64, blockchain: &mut Blockchain) -> Result<Transaction, &'static str> {
+        if self.get_balance() < amount {
+            return Err("Insufficient Balance");
+        }
+        
+        let transaction1 = Transaction::new(
+            self.public_key.clone(), // Clone the sender's public key
+            recipient.public_key.clone(), // Clone the recipient's public key
+            amount,
+        );
+        
+        self.coins.add(amount);
+        recipient.coins.subtract(amount);
+        
+        blockchain.add_block(vec![transaction1.clone()]);
+        
+        Ok(transaction1)
     }
 }

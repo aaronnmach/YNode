@@ -1,18 +1,19 @@
 use sha2::{Sha256, Digest};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+#[derive(Clone)]
 pub struct Transaction {
     pub senderKey: String, 
     pub receiverKey: String,
     pub amount: u64,
     pub timestamp: u64,
     pub actionID: String,
-    pub signature: Vec<u8>
+    //pub signature: Vec<u8>
 }
 
 impl Transaction{   
     // for creating a new transaction
-    pub fn new(sender: String, receiver: String, amount: u64, signature: Vec<u8>) -> Self{
+    pub fn new(sender: String, receiver: String, amount: u64) -> Self{
         let timestamp = Self::get_current_timestamp();
         let actionID = Transaction::calculate_tx_id(&sender, &receiver, amount, timestamp);
         Transaction {
@@ -21,7 +22,6 @@ impl Transaction{
             amount,
             timestamp,
             actionID,
-            signature,
         }
     }
     // generates a unique hash for the transaction based on sender, receipient, amount, timestamp

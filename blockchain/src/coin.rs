@@ -1,3 +1,5 @@
+use crate::transaction::Transaction;
+
 pub struct Coin {
     pub balance: u64,
 }
