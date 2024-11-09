@@ -56,6 +56,9 @@ impl Account {
         if self.get_balance() < amount {
             return Err("Insufficient Balance");
         }
+        if self.get_balance() == 0{
+            return Err("Cannot send 0");
+        }
     
         // Create the transaction (including actionID)
         let transaction = Transaction::new(self.public_key.clone(), recipient.public_key.clone(), amount);
